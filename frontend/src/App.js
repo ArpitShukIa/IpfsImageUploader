@@ -2,9 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import {useEthers} from "@usedapp/core";
 import {providers} from "ethers";
 import {getDeployedContract} from "./contractUtils"
-import {create} from 'ipfs-http-client'
-
-const ipfs = create({host: 'ipfs.infura.io', port: 5001, protocol: 'https'})
+import {getIpfsFileUrl, ipfsClient} from "./ipfs";
 
 function App() {
     const [contract, setContract] = useState(null)
@@ -54,7 +52,7 @@ function App() {
         const run = async () => {
             setUploading(true)
             try {
-                const result = await ipfs.add(file)
+                const result = await ipfsClient.add(file)
                 setIpfsHash("")
                 const tx = await contract.setIpfsHash(result.path)
                 await tx.wait(1)
@@ -93,7 +91,7 @@ function App() {
                             <p>This image is stored on IPFS & The Ethereum Blockchain!</p>
                             {
                                 ipfsHash ?
-                                    <img src={`https://ipfs.infura.io/ipfs/${ipfsHash}`} alt=""
+                                    <img src={getIpfsFileUrl(ipfsHash)} alt=""
                                          style={{maxHeight: "300px"}}
                                     /> : ""
 
@@ -104,7 +102,7 @@ function App() {
                                    style={{width: "70%"}} ref={fileRef}
                                    onChange={onFileChange}/>
                             <button className="btn btn-primary mt-2" onClick={onSubmit} disabled={uploading}>
-                                {uploading ? "Submitting" : "Submit"}
+                                {uploading ? "Submitting..." : "Submit"}
                             </button>
                         </div>
                         : <div style={{textAlign: "center"}}>
